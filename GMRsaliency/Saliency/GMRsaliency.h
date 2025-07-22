@@ -1,14 +1,14 @@
 #ifndef _GMRSALIENCY_H
 #define _GMRSALIENCY_H
 
-#include <opencv2\core\core.hpp>
-#include <opencv2\highgui\highgui.hpp>
-#include <opencv2\imgproc\imgproc.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <limits>
-#include "..\Superpixel\SLIC.h"
+#include "../Superpixel/SLIC.h"
 
 using namespace cv;
 
