@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
-#include "../Superpixel/SLIC.h"
+#include "SLIC.h"
 
 
 class GMRsaliency
