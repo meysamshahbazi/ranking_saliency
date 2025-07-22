@@ -8,9 +8,8 @@ date: 2013.5.7
 */
 
 #include <cstring>
-#include <windows.h>
 #include <time.h>
-#include "Saliency\GMRsaliency.h"
+#include "Saliency/GMRsaliency.h"
 
 void GetImageNames(char* filepath,vector<string> &imnames);
 
@@ -44,6 +43,7 @@ int main(int argc,char *argv[])
 	system("pause");
 	return 0;
 }
+
 void GetImageNames(char* filepath,vector<string> &imnames)
 {
 	imnames.clear();

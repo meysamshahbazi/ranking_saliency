@@ -20,7 +20,7 @@ GMRsaliency::~GMRsaliency()
 {
 }
 
-Mat GMRsaliency::GetSup(const Mat &image)
+cv::Mat GMRsaliency::GetSup(const cv::Mat &image)
 {
 	int width=image.cols;
 	int height=image.rows;
@@ -32,7 +32,7 @@ Mat GMRsaliency::GetSup(const Mat &image)
 		{
 			for(int j=0;j<height;j++)
 
-				img[c*(width*height)+i*height+j]=saturate_cast<unsigned int>(image.at<Vec3b>(j,i)[2-c]);
+				img[c*(width*height)+i*height+j]= cv::saturate_cast<unsigned int>(image.at<cv::Vec3b>(j,i)[2-c]);
 		}
 	}
 	int* labels = new int[sz];
@@ -41,7 +41,7 @@ Mat GMRsaliency::GetSup(const Mat &image)
 	slic.DoSuperpixelSegmentation_ForGivenNumberOfSuperpixels(img, height, width, labels, spcounta, spcount, compactness);	
 
 
-	Mat supLab(image.size(),CV_16U);
+	cv::Mat supLab(image.size(), CV_16U);
 	for(int i=0;i<supLab.rows;i++)
 	{
 		for(int j=0;j<supLab.cols;j++)
@@ -59,9 +59,9 @@ Mat GMRsaliency::GetSup(const Mat &image)
 
 }
 
-Mat GMRsaliency::GetAdjLoop(const Mat &supLab)
+cv::Mat GMRsaliency::GetAdjLoop(const cv::Mat &supLab)
 {
-	Mat adj(Size(spcounta,spcounta),CV_16U,Scalar(0));
+	cv::Mat adj(cv::Size(spcounta,spcounta),CV_16U, cv::Scalar(0));
 	for(int i=0;i<supLab.rows-1;i++)
 	{
 		for(int j=0;j<supLab.cols-1;j++)
@@ -129,7 +129,7 @@ Mat GMRsaliency::GetAdjLoop(const Mat &supLab)
 
 }
 
-Mat GMRsaliency::GetWeight(const Mat &img,const Mat &supLab,const Mat &adj)
+cv::Mat GMRsaliency::GetWeight(const cv::Mat &img,const cv::Mat &supLab,const cv::Mat &adj)
 {
 	vector<float> supL(spcounta,0);
 	vector<float> supa(spcounta,0);
@@ -152,7 +152,7 @@ Mat GMRsaliency::GetWeight(const Mat &img,const Mat &supLab,const Mat &adj)
 		supa[i]/=pcount[i];
 		supb[i]/=pcount[i];
 	}
-	Mat w(adj.size(),CV_32F,Scalar(-1));
+	cv::Mat w(adj.size(),CV_32F,cv::Scalar(-1));
 	float minw=(float)numeric_limits<float>::max(),maxw=(float)numeric_limits<float>::min();
 	for(int i=0;i<spcounta;i++)
 	{
@@ -195,25 +195,25 @@ Mat GMRsaliency::GetWeight(const Mat &img,const Mat &supLab,const Mat &adj)
 	return w;
 }
 
-Mat GMRsaliency::GetOptAff(const Mat &W)
+cv::Mat GMRsaliency::GetOptAff(const cv::Mat &W)
 {
 
-	Mat dd(Size(W.rows,1),CV_32F);
-	reduce(W,dd,1,CV_REDUCE_SUM);
-	Mat D(W.size(),CV_32F);
-	D=Mat::diag(dd);
-	Mat optAff(W.size(),CV_32F);
-	optAff=(D-alpha*W);
-	optAff=optAff.inv();
-	Mat B=Mat::ones(optAff.size(),CV_32F)-Mat::eye(optAff.size(),CV_32F);
-	optAff=optAff.mul(B);
+	cv::Mat dd(cv::Size(W.rows,1),CV_32F);
+	cv::reduce(W,dd,1, cv::REDUCE_SUM);
+	cv::Mat D(W.size(),CV_32F);
+	D = cv::Mat::diag(dd);
+	cv::Mat optAff(W.size(),CV_32F);
+	optAff = (D-alpha*W);
+	optAff = optAff.inv();
+	cv::Mat B = cv::Mat::ones(optAff.size(),CV_32F)-cv::Mat::eye(optAff.size(),CV_32F);
+	optAff = optAff.mul(B);
 	return optAff;
 
 }
 
-Mat GMRsaliency::GetBdQuery(const Mat &supLab,int type)
+cv::Mat GMRsaliency::GetBdQuery(const cv::Mat &supLab,int type)
 {
-	Mat y(Size(1,spcounta),CV_32F,Scalar(0));
+	cv::Mat y(cv::Size(1,spcounta),CV_32F,cv::Scalar(0));
 	switch(type)
 	{
 	case 1:
@@ -239,12 +239,12 @@ Mat GMRsaliency::GetBdQuery(const Mat &supLab,int type)
 		
 }
 
-Mat GMRsaliency::RemoveFrame(const Mat &img,int *wcut)
+cv::Mat GMRsaliency::RemoveFrame(const cv::Mat &img,int *wcut)
 {
-	double thr=0.6;
-	Mat grayimg;
-	cvtColor(img,grayimg,CV_BGR2GRAY);
-	Mat edge;
+	double thr = 0.6;
+	cv::Mat grayimg;
+	cvtColor(img, grayimg, cv::COLOR_BGR2GRAY);
+	cv::Mat edge;
 	Canny(grayimg,edge,150*0.4,150);
 
 	int flagt=0;
@@ -262,10 +262,10 @@ Mat GMRsaliency::RemoveFrame(const Mat &img,int *wcut)
 	int i=0;
 	while(i<30)
 	{
-		float pbt=(float)mean(edge(Range(i,i+1),Range::all()))[0];
-		float pbd=(float)mean(edge(Range(m-i-1,m-i),Range::all()))[0];
-		float pbl=(float)mean(edge(Range::all(),Range(i,i+1)))[0];
-		float pbr=(float)mean(edge(Range::all(),Range(n-i-1,n-i)))[0];
+		float pbt=(float)mean(edge(cv::Range(i,i+1),cv::Range::all()))[0];
+		float pbd=(float)mean(edge(cv::Range(m-i-1,m-i),cv::Range::all()))[0];
+		float pbl=(float)mean(edge(cv::Range::all(),cv::Range(i,i+1)))[0];
+		float pbr=(float)mean(edge(cv::Range::all(),cv::Range(n-i-1,n-i)))[0];
 		if(pbt/255>thr)
 		{
 			t=i;
@@ -289,7 +289,7 @@ Mat GMRsaliency::RemoveFrame(const Mat &img,int *wcut)
 		i++;
 	}
 	int flagrm=flagt+flagd+flagl+flagr;
-	Mat outimg;
+	cv::Mat outimg;
 	if(flagrm>1)
 	{
 		int maxwidth;
@@ -304,7 +304,7 @@ Mat GMRsaliency::RemoveFrame(const Mat &img,int *wcut)
 			l=maxwidth;
 		if(r==0)
 			r=maxwidth;
-		outimg=img(Range(t,m-d),Range(l,n-r));
+		outimg=img(cv::Range(t,m-d),cv::Range(l,n-r));
 		wcut[0]=m;
 		wcut[1]=n;
 		wcut[2]=t;
@@ -326,65 +326,65 @@ Mat GMRsaliency::RemoveFrame(const Mat &img,int *wcut)
 
 }
 
-Mat GMRsaliency::GetSal(Mat &img)
+cv::Mat GMRsaliency::GetSal(cv::Mat &img)
 {
 
 	int wcut[6];
 	img=RemoveFrame(img,wcut);
 
-	Mat suplabel(img.size(),CV_16U);
+	cv::Mat suplabel(img.size(),CV_16U);
 	suplabel=GetSup(img);
 
-	Mat adj(Size(spcounta,spcounta),CV_16U);
+	cv::Mat adj(cv::Size(spcounta,spcounta),CV_16U);
 	adj=GetAdjLoop(suplabel);
 
-	Mat tImg;
+	cv::Mat tImg;
 	img.convertTo(tImg,CV_32FC3,1.0/255);
-	cvtColor(tImg, tImg, CV_BGR2Lab);
+	cvtColor(tImg, tImg, cv::COLOR_BGR2Lab);
 
-	Mat W(adj.size(),CV_32F);
+	cv::Mat W(adj.size(),CV_32F);
 	W=GetWeight(tImg,suplabel,adj);
 
-	Mat optAff(W.size(),CV_32F);
+	cv::Mat optAff(W.size(),CV_32F);
 	optAff=GetOptAff(W);
 
-	Mat salt,sald,sall,salr;
-	Mat bdy;
+	cv::Mat salt,sald,sall,salr;
+	cv::Mat bdy;
 
 	bdy=GetBdQuery(suplabel,1);
 	salt=optAff*bdy;
-	normalize(salt, salt, 0, 1, NORM_MINMAX);
+	normalize(salt, salt, 0, 1, cv::NORM_MINMAX);
 	salt=1-salt;
 
 	bdy=GetBdQuery(suplabel,2);
 	sald=optAff*bdy;
-	normalize(sald, sald, 0, 1, NORM_MINMAX);
+	normalize(sald, sald, 0, 1, cv::NORM_MINMAX);
 	sald=1-sald;
 
 	bdy=GetBdQuery(suplabel,3);
 	sall=optAff*bdy;
-	normalize(sall, sall, 0, 1, NORM_MINMAX);
+	normalize(sall, sall, 0, 1, cv::NORM_MINMAX);
 	sall=1-sall;
 
 	bdy=GetBdQuery(suplabel,4);
 	salr=optAff*bdy;
-	normalize(salr, salr, 0, 1, NORM_MINMAX);
+	normalize(salr, salr, 0, 1, cv::NORM_MINMAX);
 	salr=1-salr;
 
-	Mat salb;
+	cv::Mat salb;
 	salb=salt;
 	salb=salb.mul(sald);
 	salb=salb.mul(sall);
 	salb=salb.mul(salr);
 
 	double thr=mean(salb)[0];
-	Mat fgy;
-	threshold(salb,fgy,thr,1,THRESH_BINARY);
+	cv::Mat fgy;
+	threshold(salb,fgy,thr,1, cv::THRESH_BINARY);
 
-    Mat salf;
+    cv::Mat salf;
 	salf=optAff*fgy;
 
-	Mat salMap(img.size(),CV_32F);
+	cv::Mat salMap(img.size(),CV_32F);
 	for(int i=0;i<salMap.rows;i++)
 	{
 		for(int j=0;j<salMap.cols;j++)
@@ -393,10 +393,10 @@ Mat GMRsaliency::GetSal(Mat &img)
 		}
 	}
 
-	normalize(salMap, salMap, 0, 1, NORM_MINMAX);
+	normalize(salMap, salMap, 0, 1, cv::NORM_MINMAX);
 
-	Mat outMap(Size(wcut[1],wcut[0]),CV_32F,Scalar(0));
-	Mat subMap=outMap(Range(wcut[2],wcut[3]),Range(wcut[4],wcut[5]));
+	cv::Mat outMap(cv::Size(wcut[1],wcut[0]),CV_32F,cv::Scalar(0));
+	cv::Mat subMap=outMap(cv::Range(wcut[2],wcut[3]),cv::Range(wcut[4],wcut[5]));
 	salMap.convertTo(subMap,subMap.type());
 	return outMap;
 

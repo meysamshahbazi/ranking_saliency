@@ -10,7 +10,6 @@
 #include <limits>
 #include "../Superpixel/SLIC.h"
 
-using namespace cv;
 
 class GMRsaliency
 {
@@ -19,7 +18,7 @@ public:
 	~GMRsaliency();
 
 	//Get saliency map of an input image
-	Mat GetSal(Mat &img);
+	cv::Mat GetSal(cv::Mat &img);
 
 private://parameters
 	int spcount;//superpxiels number
@@ -30,22 +29,22 @@ private://parameters
 
 private:
 	//Get the superpixels of the image
-	Mat GetSup(const Mat &img);	
+	cv::Mat GetSup(const cv::Mat &img);	
 
-	//Get the adjacent matrix
-	Mat GetAdjLoop(const Mat &supLab);
+	//Get the adjacent cv::Matrix
+	cv::Mat GetAdjLoop(const cv::Mat &supLab);
 
-	//Get the affinity matrix of edges 
-	Mat GetWeight(const Mat &img,const Mat &supLab,const Mat &adj);
+	//Get the affinity cv::Matrix of edges 
+	cv::Mat GetWeight(const cv::Mat &img,const cv::Mat &supLab,const cv::Mat &adj);
 
-	//Get the optimal affinity matrix learned by minifold ranking (e.q. 3 in paper)
-	Mat GetOptAff(const Mat &W);
+	//Get the optimal affinity cv::Matrix learned by minifold ranking (e.q. 3 in paper)
+	cv::Mat GetOptAff(const cv::Mat &W);
 
 	//Get the indicator vector based on boundary prior
-	Mat GetBdQuery(const Mat &supLab,int type);
+	cv::Mat GetBdQuery(const cv::Mat &supLab,int type);
 
 	//Remove the obvious frame of the image
-	Mat RemoveFrame(const Mat &img,int *wcut);
+	cv::Mat RemoveFrame(const cv::Mat &img,int *wcut);
 
 };
 
